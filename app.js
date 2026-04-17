@@ -764,67 +764,87 @@ function drawConsentSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN KEBENARAN IBUBAPA / PENJAGA");
   renderer.rect(18, y + 20, PAGE.width - 36, 104, { stroke: "#000000", lineWidth: 1 });
   renderer.textBox("Saya,", 24, y + 32, 28, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(55, y + 44, 278, y + 44, { lineWidth: 0.9 });
-  renderer.textBox(`No KP ${record.parentIc || "________________________"}`, 294, y + 32, 180, 12, {
+  renderer.line(55, y + 44, 308, y + 44, { lineWidth: 0.9 });
+  renderer.textBox(`No KP`, 322, y + 32, 36, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
+  renderer.line(360, y + 44, 468, y + 44, { lineWidth: 0.9 });
   renderer.textBox(
     consentParagraph(record),
     24,
-    y + 48,
+    y + 46,
     PAGE.width - 48,
-    34,
-    { fontSize: TYPE.bodyTight, lineHeight: 1.2, paddingTop: 1 },
+    40,
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
   );
-  renderer.textBox(record.parentName || "", 60, y + 32, 212, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(record.parentName || "", 60, y + 32, 244, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(record.parentIc || "", 364, y + 32, 98, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
   renderer.textBox("Tandatangan :", 24, y + 88, 70, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(98, y + 100, 282, y + 100, { lineWidth: 0.9 });
-  renderer.textBox("Tarikh :", 322, y + 88, 38, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(360, y + 100, 548, y + 100, { lineWidth: 0.9 });
-  renderer.textBox(record.parentDate || "", 364, y + 88, 180, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.line(98, y + 100, 248, y + 100, { lineWidth: 0.9 });
+  renderer.textBox("Tarikh :", 252, y + 88, 38, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
+  renderer.line(290, y + 100, 414, y + 100, { lineWidth: 0.9 });
+  renderer.textBox(record.parentDate || "", 294, y + 88, 116, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
 }
 
 function drawPrincipalSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN GURU BESAR / PENGETUA");
   renderer.rect(18, y + 20, PAGE.width - 36, 82, { stroke: "#000000", lineWidth: 1 });
   renderer.textBox("Saya,", 24, y + 30, 28, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(55, y + 42, 278, y + 42, { lineWidth: 0.9 });
-  renderer.textBox(`No KP ${record.principalIc || "________________________"}`, 294, y + 30, 180, 12, {
+  renderer.line(55, y + 42, 308, y + 42, { lineWidth: 0.9 });
+  renderer.textBox("No KP", 322, y + 30, 36, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.textBox(record.principalName || "", 60, y + 30, 212, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox(`Nama Sekolah : ${record.schoolName || "________________________"}`, 24, y + 52, 290, 12, {
+  renderer.line(360, y + 42, 478, y + 42, { lineWidth: 0.9 });
+  renderer.textBox(record.principalName || "", 60, y + 30, 244, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(record.principalIc || "", 364, y + 30, 108, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(
+    principalParagraph(),
+    24,
+    y + 44,
+    PAGE.width - 48,
+    20,
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
+  );
+  renderer.textBox("Nama Sekolah :", 24, y + 60, 74, 12, {
+    fontSize: TYPE.body,
+    lineHeight: TYPE.lineHeightTight,
+  });
+  renderer.textBox(record.schoolName || "", 98, y + 60, 162, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.textBox(`Tel Sekolah : ${record.schoolPhone || "____________________"}`, 330, y + 52, 220, 12, {
+  renderer.textBox("Tel Sekolah :", 266, y + 60, 64, 12, {
+    fontSize: TYPE.body,
+    lineHeight: TYPE.lineHeightTight,
+  });
+  renderer.textBox(record.schoolPhone || "", 330, y + 60, 84, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.textBox("Tanda Tangan :", 24, y + 72, 82, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(108, y + 84, 292, y + 84, { lineWidth: 0.9 });
-  renderer.textBox("Tarikh :", 330, y + 72, 38, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(368, y + 84, 548, y + 84, { lineWidth: 0.9 });
-  renderer.textBox(record.principalDate || "", 372, y + 72, 174, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox("(Cop Rasmi)", 250, y + 88, 90, 10, { fontSize: TYPE.bodySmall, color: "#555555", align: "center", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox("Tanda Tangan:", 24, y + 80, 80, 12, { fontSize: TYPE.body, lineHeight: TYPE.lineHeightTight });
+  renderer.line(104, y + 92, 214, y + 92, { lineWidth: 0.9 });
+  renderer.textBox("Tarikh :", 252, y + 80, 38, 12, { fontSize: TYPE.body, lineHeight: TYPE.lineHeightTight });
+  renderer.line(290, y + 92, 394, y + 92, { lineWidth: 0.9 });
+  renderer.textBox(record.principalDate || "", 294, y + 80, 96, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox("Cop Rasmi", 182, y + 86, 72, 10, { fontSize: TYPE.bodySmall, color: "#222222", align: "center", lineHeight: TYPE.lineHeightTight });
 }
 
 function drawManagerSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN PENGURUS PASUKAN dan SETIAUSAHA MSS DAERAH/UNIT SUKAN PPD");
   renderer.rect(18, y + 20, PAGE.width - 36, 158, { stroke: "#000000", lineWidth: 1 });
   renderer.textBox(
-    "Pengesahan bahawa peserta ini adalah ahli pasukan yang sah dan semua maklumat yang diberikan adalah benar.",
+    managerParagraph(record),
     24,
     y + 28,
     PAGE.width - 48,
-    26,
-    { fontSize: TYPE.bodyTight, lineHeight: 1.2, paddingTop: 1 },
+    24,
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
   );
   renderer.textBox("PENGURUS PASUKAN", 50, y + 58, 180, 12, {
     fontSize: TYPE.body,
@@ -873,9 +893,15 @@ function drawSignatureColumn(renderer, x, y, values) {
 }
 
 function consentParagraph(record) {
-  return `membenarkan anak / jagaan saya ${record.fullName || "__________________"} menyertai ${
-    record.championship || "kejohanan"
-  } sebagai wakil ${record.district || "daerah"}. Saya mengesahkan bahawa semua maklumat yang diberi adalah benar dan saya bersetuju mematuhi semua syarat penganjur.`;
+  return `adalah bapa/ibu/penjaga kepada pelajar di atas, mengesahkan segala keterangan di atas adalah benar dan gambar terbaru adalah betul. Saya juga membenarkan anak/jagaan saya didaftarkan sebagai pemain ${record.category ? `(${record.category}) ` : ""}untuk pasukan ${record.district || "__________________"} dan bersetuju mematuhi Perlembagaan, undang-undang, peraturan-peraturan, pekeliling-pekeliling dan syarat-syarat mengenai pertandingan ini. Saya juga faham bahawa pihak tuan sentiasa memberi segala penerangan dan akan mengambil langkah-langkah keselamatan dan pengawasan yang diperlukan sepanjang masa kejohanan tersebut.`;
+}
+
+function principalParagraph() {
+  return "mengesahkan segala keterangan di atas adalah betul dan gambar di atas adalah terbaru dan benar.";
+}
+
+function managerParagraph(record) {
+  return `Diakui penama di atas adalah ahli pasukan ini yang menyertai ${record.championship || "Kejohanan / Pertandingan Majlis Sukan Sekolah-sekolah Perak"} dan sepanjang pengetahuan saya semua maklumat yang diberikan adalah benar.`;
 }
 
 class CanvasRenderer {
