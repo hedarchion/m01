@@ -3,6 +3,8 @@ const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
 const PAGE = { width: 595, height: 842 };
 const PREVIEW_SCALE = 2;
 const LOGO_PATH = "./Pasted%20image.png";
+const FORM_LINE_WIDTH = 1;
+const loadedImageCache = new Map();
 const TYPE = {
   body: 9.2,
   bodySmall: 8.4,
@@ -16,6 +18,7 @@ const TYPE = {
   insetX: 4,
   insetY: 3,
 };
+const PREVIEW_PLACEHOLDER_BLUE = "#1f5fbf";
 
 const FIELD_DEFS = [
   {
@@ -578,25 +581,26 @@ async function drawFormPage(renderer, pageNumber, record, assets) {
 async function drawPageOne(renderer, record, assets) {
   const left = 18;
   const width = PAGE.width - 36;
+  const firstColumnWidth = 112;
 
-  renderer.rect(left, 18, width, 44, { stroke: "#000000", lineWidth: 1.2 });
-  renderer.rect(left, 18, 76, 44, { stroke: "#000000", lineWidth: 1 });
-  renderer.rect(left + 76, 18, width - 170, 22, { stroke: "#000000", fill: "#d9d9d9", lineWidth: 1 });
-  renderer.rect(left + 76, 40, width - 170, 22, { stroke: "#000000", fill: "#d9d9d9", lineWidth: 1 });
-  renderer.rect(left + width - 94, 18, 94, 44, { stroke: "#000000", lineWidth: 1 });
+  renderer.rect(left, 18, width, 44, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+  renderer.rect(left, 18, firstColumnWidth, 44, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+  renderer.rect(left + firstColumnWidth, 18, width - (firstColumnWidth + 94), 22, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+  renderer.rect(left + firstColumnWidth, 40, width - (firstColumnWidth + 94), 22, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+  renderer.rect(left + width - 94, 18, 94, 44, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
 
   if (assets.logo) {
-    await renderer.image(assets.logo, left + 6, 22, 64, 36, { mode: "contain" });
+    await renderer.image(assets.logo, left + 8, 22, firstColumnWidth - 16, 36, { mode: "contain" });
   }
 
-  renderer.textBox("Majlis Sukan Sekolah-Sekolah Perak", left + 84, 21, width - 186, 16, {
+  renderer.textBox("Majlis Sukan Sekolah-Sekolah Perak", left + firstColumnWidth + 8, 21, width - (firstColumnWidth + 110), 16, {
     fontSize: TYPE.title,
     fontWeight: "bold",
     align: "center",
     valign: "middle",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.textBox("BORANG PENDAFTARAN INDIVIDU", left + 84, 43, width - 186, 14, {
+  renderer.textBox("BORANG PENDAFTARAN INDIVIDU", left + firstColumnWidth + 8, 43, width - (firstColumnWidth + 110), 14, {
     fontSize: TYPE.subtitle,
     fontWeight: "bold",
     align: "center",
@@ -604,10 +608,11 @@ async function drawPageOne(renderer, record, assets) {
     lineHeight: TYPE.lineHeightTight,
   });
   renderer.textBox("M01", left + width - 94, 28, 94, 14, {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "bold",
     align: "center",
     valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
   });
 
   drawLabeledRow(renderer, 62, [
@@ -621,11 +626,11 @@ async function drawPageOne(renderer, record, assets) {
   sectionHeader(renderer, 122, "MAKLUMAT PESERTA");
 
   const tableX = left;
-  const tableY = 144;
-  const leftTableWidth = 423;
+  const tableY = 142;
+  const leftTableWidth = 431;
   const photoWidth = width - leftTableWidth;
   const numberWidth = 28;
-  const labelWidth = 126;
+  const labelWidth = 118;
   const valueWidth = leftTableWidth - numberWidth - labelWidth;
   const rowHeights = [22, 22, 22, 22, 44, 22, 22, 22];
   const labels = [
@@ -642,11 +647,11 @@ async function drawPageOne(renderer, record, assets) {
   let runningY = tableY;
   for (let i = 0; i < labels.length; i += 1) {
     const rowHeight = rowHeights[i];
-    renderer.rect(tableX, runningY, numberWidth, rowHeight, { stroke: "#000000", lineWidth: 1 });
-    renderer.rect(tableX + numberWidth, runningY, labelWidth, rowHeight, { stroke: "#000000", lineWidth: 1 });
+    renderer.rect(tableX, runningY, numberWidth, rowHeight, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+    renderer.rect(tableX + numberWidth, runningY, labelWidth, rowHeight, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
     renderer.rect(tableX + numberWidth + labelWidth, runningY, valueWidth, rowHeight, {
       stroke: "#000000",
-      lineWidth: 1,
+      lineWidth: FORM_LINE_WIDTH,
     });
     renderer.textBox(labels[i][0], tableX + 2, runningY + TYPE.insetY, numberWidth - 4, rowHeight - TYPE.insetY * 2, {
       fontSize: TYPE.bodySmall,
@@ -685,7 +690,7 @@ async function drawPageOne(renderer, record, assets) {
 
   renderer.rect(tableX + leftTableWidth, tableY, photoWidth, rowHeights.reduce((sum, value) => sum + value, 0), {
     stroke: "#000000",
-    lineWidth: 1,
+    lineWidth: FORM_LINE_WIDTH,
   });
   renderer.textBox("<passport photo>", tableX + leftTableWidth + 6, tableY + 6, photoWidth - 12, 14, {
     fontSize: TYPE.bodySmall,
@@ -704,6 +709,7 @@ async function drawPageOne(renderer, record, assets) {
     );
   }
 
+  renderer.rect(18, 334, PAGE.width - 36, 404, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
   drawConsentSection(renderer, 334, record);
   drawPrincipalSection(renderer, 458, record);
   drawManagerSection(renderer, 560, record);
@@ -713,7 +719,7 @@ async function drawPageTwo(renderer, record, assets) {
   const left = 18;
   const width = PAGE.width - 36;
   sectionHeader(renderer, 18, "SALINAN KAD PENGENALAN/SURAT BERANAK");
-  renderer.rect(left, 38, width, 660, { stroke: "#000000", lineWidth: 1 });
+  renderer.rect(left, 38, width, 660, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("[ SCANNED IC IMAGE ]", left + 10, 50, 180, 14, {
     fontSize: TYPE.label,
     fontWeight: "bold",
@@ -732,8 +738,8 @@ function drawLabeledRow(renderer, y, entries) {
   let x = 18;
   const height = 24;
   for (const entry of entries) {
-    renderer.rect(x, y, entry.labelWidth, height, { stroke: "#000000", lineWidth: 1 });
-    renderer.rect(x + entry.labelWidth, y, entry.valueWidth, height, { stroke: "#000000", lineWidth: 1 });
+    renderer.rect(x, y, entry.labelWidth, height, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
+    renderer.rect(x + entry.labelWidth, y, entry.valueWidth, height, { stroke: "#000000", lineWidth: FORM_LINE_WIDTH });
     renderer.textBox(entry.label, x + TYPE.insetX, y + TYPE.insetY, entry.labelWidth - TYPE.insetX * 2, height - TYPE.insetY * 2, {
       fontSize: TYPE.label,
       fontWeight: "bold",
@@ -750,7 +756,7 @@ function drawLabeledRow(renderer, y, entries) {
 }
 
 function sectionHeader(renderer, y, title) {
-  renderer.rect(18, y, PAGE.width - 36, 20, { stroke: "#000000", fill: "#d9d9d9", lineWidth: 1 });
+  renderer.rect(18, y, PAGE.width - 36, 20, { stroke: "#000000", fill: "#d9d9d9", lineWidth: FORM_LINE_WIDTH });
   renderer.textBox(title, 24, y + 3, PAGE.width - 48, 14, {
     fontSize: TYPE.section,
     fontWeight: "bold",
@@ -762,43 +768,63 @@ function sectionHeader(renderer, y, title) {
 
 function drawConsentSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN KEBENARAN IBUBAPA / PENJAGA");
-  renderer.rect(18, y + 20, PAGE.width - 36, 104, { stroke: "#000000", lineWidth: 1 });
+  renderer.line(18, y + 124, PAGE.width - 18, y + 124, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("Saya,", 24, y + 32, 28, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(55, y + 44, 308, y + 44, { lineWidth: 0.9 });
+  renderer.line(55, y + 44, 314, y + 44, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox(`No KP`, 322, y + 32, 36, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.line(360, y + 44, 468, y + 44, { lineWidth: 0.9 });
+  renderer.line(360, y + 44, 544, y + 44, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox(
     consentParagraph(record),
     24,
     y + 46,
     PAGE.width - 48,
     40,
-    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5, color: previewPlaceholderColor(renderer, consentParagraph(record)) },
   );
-  renderer.textBox(record.parentName || "", 60, y + 32, 244, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox(record.parentIc || "", 364, y + 32, 98, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox("Tandatangan :", 24, y + 88, 70, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(98, y + 100, 248, y + 100, { lineWidth: 0.9 });
+  renderer.textBox(record.parentName || "", 60, y + 32, 244, 10, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.parentName || ""),
+  });
+  renderer.textBox(record.parentIc || "", 364, y + 32, 98, 10, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.parentIc || ""),
+  });
+  renderer.textBox("Tandatangan :", 24, y + 88, 70, 12, {
+    fontSize: TYPE.body,
+    fontWeight: "bold",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, "__________________"),
+  });
+  renderer.line(98, y + 100, 240, y + 100, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("Tarikh :", 252, y + 88, 38, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(290, y + 100, 414, y + 100, { lineWidth: 0.9 });
-  renderer.textBox(record.parentDate || "", 294, y + 88, 116, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.line(290, y + 100, 544, y + 100, { lineWidth: FORM_LINE_WIDTH });
+  renderer.textBox(record.parentDate || "", 294, y + 88, 116, 12, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.parentDate || ""),
+  });
 }
 
 function drawPrincipalSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN GURU BESAR / PENGETUA");
-  renderer.rect(18, y + 20, PAGE.width - 36, 82, { stroke: "#000000", lineWidth: 1 });
+  renderer.line(18, y + 102, PAGE.width - 18, y + 102, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("Saya,", 24, y + 30, 28, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(55, y + 42, 308, y + 42, { lineWidth: 0.9 });
+  renderer.line(55, y + 42, 314, y + 42, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("No KP", 322, y + 30, 36, 12, {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
   });
-  renderer.line(360, y + 42, 478, y + 42, { lineWidth: 0.9 });
+  renderer.line(360, y + 42, 544, y + 42, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox(record.principalName || "", 60, y + 30, 244, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
   renderer.textBox(record.principalIc || "", 364, y + 30, 108, 10, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
   renderer.textBox(
@@ -807,7 +833,7 @@ function drawPrincipalSection(renderer, y, record) {
     y + 44,
     PAGE.width - 48,
     20,
-    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5, color: previewPlaceholderColor(renderer, principalParagraph()) },
   );
   renderer.textBox("Nama Sekolah :", 24, y + 60, 74, 12, {
     fontSize: TYPE.body,
@@ -817,6 +843,7 @@ function drawPrincipalSection(renderer, y, record) {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.schoolName || "", record.schoolName === FIELD_DEFS.find((field) => field.id === "schoolName")?.fallback),
   });
   renderer.textBox("Tel Sekolah :", 266, y + 60, 64, 12, {
     fontSize: TYPE.body,
@@ -826,25 +853,35 @@ function drawPrincipalSection(renderer, y, record) {
     fontSize: TYPE.body,
     fontWeight: "bold",
     lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.schoolPhone || "", record.schoolPhone === FIELD_DEFS.find((field) => field.id === "schoolPhone")?.fallback),
   });
   renderer.textBox("Tanda Tangan:", 24, y + 80, 80, 12, { fontSize: TYPE.body, lineHeight: TYPE.lineHeightTight });
-  renderer.line(104, y + 92, 214, y + 92, { lineWidth: 0.9 });
+  renderer.line(104, y + 92, 240, y + 92, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox("Tarikh :", 252, y + 80, 38, 12, { fontSize: TYPE.body, lineHeight: TYPE.lineHeightTight });
-  renderer.line(290, y + 92, 394, y + 92, { lineWidth: 0.9 });
-  renderer.textBox(record.principalDate || "", 294, y + 80, 96, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox("Cop Rasmi", 182, y + 86, 72, 10, { fontSize: TYPE.bodySmall, color: "#222222", align: "center", lineHeight: TYPE.lineHeightTight });
+  renderer.line(290, y + 92, 544, y + 92, { lineWidth: FORM_LINE_WIDTH });
+  renderer.textBox(record.principalDate || "", 294, y + 80, 96, 12, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, record.principalDate || ""),
+  });
+  renderer.textBox("Cop Rasmi", 134, y + 94, 146, 10, {
+    fontSize: TYPE.bodySmall,
+    color: previewPlaceholderColor(renderer, "Cop Rasmi"),
+    align: "center",
+    lineHeight: TYPE.lineHeightTight,
+  });
 }
 
 function drawManagerSection(renderer, y, record) {
   sectionHeader(renderer, y, "AKUAN PENGURUS PASUKAN dan SETIAUSAHA MSS DAERAH/UNIT SUKAN PPD");
-  renderer.rect(18, y + 20, PAGE.width - 36, 158, { stroke: "#000000", lineWidth: 1 });
   renderer.textBox(
     managerParagraph(record),
     24,
     y + 28,
     PAGE.width - 48,
     24,
-    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5 },
+    { fontSize: 7.9, lineHeight: 1.14, paddingTop: 0.5, color: previewPlaceholderColor(renderer, managerParagraph(record)) },
   );
   renderer.textBox("PENGURUS PASUKAN", 50, y + 58, 180, 12, {
     fontSize: TYPE.body,
@@ -867,6 +904,8 @@ function drawManagerSection(renderer, y, record) {
     nameValue: record.managerName,
     idValue: record.managerIc,
     dateValue: record.managerDate,
+    placeholderName: record.managerName === FIELD_DEFS.find((field) => field.id === "managerName")?.fallback,
+    placeholderId: record.managerIc === FIELD_DEFS.find((field) => field.id === "managerIc")?.fallback,
   });
 
   drawSignatureColumn(renderer, 304, y + 78, {
@@ -881,15 +920,35 @@ function drawManagerSection(renderer, y, record) {
 }
 
 function drawSignatureColumn(renderer, x, y, values) {
-  renderer.textBox(`${values.ttLabel} :`, x, y, 56, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(x + 62, y + 12, x + 228, y + 12, { lineWidth: 0.9 });
+  renderer.textBox(`${values.ttLabel} :`, x, y, 56, 12, {
+    fontSize: TYPE.body,
+    fontWeight: "bold",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, "__________________"),
+  });
+  renderer.line(x + 62, y + 12, x + 234, y + 12, { lineWidth: FORM_LINE_WIDTH });
   renderer.textBox(`${values.nameLabel} :`, x, y + 30, 48, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox(values.nameValue || "", x + 58, y + 30, 168, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(values.nameValue || "", x + 58, y + 30, 168, 12, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, values.nameValue || "", values.placeholderName),
+  });
   renderer.textBox(`${values.idLabel} :`, x, y + 56, 54, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.textBox(values.idValue || "", x + 58, y + 56, 168, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.textBox(values.idValue || "", x + 58, y + 56, 168, 12, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, values.idValue || "", values.placeholderId),
+  });
   renderer.textBox(`${values.dateLabel} :`, x, y + 82, 54, 12, { fontSize: TYPE.body, fontWeight: "bold", lineHeight: TYPE.lineHeightTight });
-  renderer.line(x + 62, y + 94, x + 228, y + 94, { lineWidth: 0.9 });
-  renderer.textBox(values.dateValue || "", x + 66, y + 82, 156, 12, { fontSize: TYPE.body, valign: "middle", lineHeight: TYPE.lineHeightTight });
+  renderer.line(x + 62, y + 94, x + 234, y + 94, { lineWidth: FORM_LINE_WIDTH });
+  renderer.textBox(values.dateValue || "", x + 66, y + 82, 156, 12, {
+    fontSize: TYPE.body,
+    valign: "middle",
+    lineHeight: TYPE.lineHeightTight,
+    color: previewPlaceholderColor(renderer, values.dateValue || ""),
+  });
 }
 
 function consentParagraph(record) {
@@ -907,6 +966,7 @@ function managerParagraph(record) {
 class CanvasRenderer {
   constructor(ctx) {
     this.ctx = ctx;
+    this.isPreview = true;
   }
 
   fillPage(color) {
@@ -916,22 +976,26 @@ class CanvasRenderer {
 
   rect(x, y, width, height, options = {}) {
     this.ctx.save();
+    const lineWidth = options.lineWidth || 1;
+    const strokeOffset = lineWidth % 2 === 1 ? 0.5 : 0;
     if (options.fill) {
       this.ctx.fillStyle = options.fill;
       this.ctx.fillRect(x, y, width, height);
     }
-    this.ctx.lineWidth = options.lineWidth || 1;
+    this.ctx.lineWidth = lineWidth;
     this.ctx.strokeStyle = options.stroke || "#000000";
-    this.ctx.strokeRect(x, y, width, height);
+    this.ctx.strokeRect(x + strokeOffset, y + strokeOffset, width - strokeOffset * 2, height - strokeOffset * 2);
     this.ctx.restore();
   }
 
   line(x1, y1, x2, y2, options = {}) {
     this.ctx.save();
+    const lineWidth = options.lineWidth || 1;
+    const strokeOffset = lineWidth % 2 === 1 ? 0.5 : 0;
     this.ctx.beginPath();
-    this.ctx.moveTo(x1, y1);
-    this.ctx.lineTo(x2, y2);
-    this.ctx.lineWidth = options.lineWidth || 1;
+    this.ctx.moveTo(x1 + strokeOffset, y1 + strokeOffset);
+    this.ctx.lineTo(x2 + strokeOffset, y2 + strokeOffset);
+    this.ctx.lineWidth = lineWidth;
     this.ctx.strokeStyle = options.stroke || "#000000";
     this.ctx.stroke();
     this.ctx.restore();
@@ -978,6 +1042,7 @@ class PdfRenderer {
   constructor(page, fonts) {
     this.page = page;
     this.fonts = fonts;
+    this.isPreview = false;
   }
 
   fillPage(color) {
@@ -1213,10 +1278,20 @@ async function readAssetBytes(asset) {
     return asset.file.arrayBuffer();
   }
   if (!asset.bytes) {
-    const response = await fetch(asset.url);
-    asset.bytes = await response.arrayBuffer();
-    if (!asset.mimeType) {
-      asset.mimeType = response.headers.get("content-type") || "image/png";
+    if (asset.url.startsWith("data:")) {
+      asset.bytes = dataUrlToUint8Array(asset.url).buffer;
+      asset.mimeType ||= asset.url.startsWith("data:image/png") ? "image/png" : "image/jpeg";
+    } else {
+      const cachedImage = loadedImageCache.get(asset.url);
+      if (cachedImage) {
+        asset.bytes = await imageElementToBytes(cachedImage, asset.mimeType || "image/png");
+      } else {
+        const response = await fetch(asset.url);
+        asset.bytes = await response.arrayBuffer();
+        if (!asset.mimeType) {
+          asset.mimeType = response.headers.get("content-type") || "image/png";
+        }
+      }
     }
   }
   return asset.bytes;
@@ -1287,9 +1362,73 @@ function downloadBlob(blob, fileName) {
 
 function loadImageElement(url) {
   return new Promise((resolve, reject) => {
+    const cached = loadedImageCache.get(url);
+    if (cached) {
+      resolve(cached);
+      return;
+    }
     const image = new Image();
-    image.onload = () => resolve(image);
+    image.onload = () => {
+      loadedImageCache.set(url, image);
+      resolve(image);
+    };
     image.onerror = reject;
     image.src = url;
   });
+}
+
+function dataUrlToUint8Array(dataUrl) {
+  const [, base64 = ""] = dataUrl.split(",", 2);
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+}
+
+function imageElementToBytes(image, mimeType) {
+  return new Promise((resolve, reject) => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0);
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob) {
+            reject(new Error("Unable to encode image for PDF export."));
+            return;
+          }
+          resolve(await blob.arrayBuffer());
+        },
+        mimeType === "image/png" ? "image/png" : "image/jpeg",
+        0.95,
+      );
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function previewPlaceholderColor(renderer, text, explicitPlaceholder = false) {
+  if (!renderer?.isPreview) {
+    return undefined;
+  }
+  return isPlaceholderText(text, explicitPlaceholder) ? PREVIEW_PLACEHOLDER_BLUE : undefined;
+}
+
+function isPlaceholderText(text, explicitPlaceholder = false) {
+  const value = `${text || ""}`.trim();
+  if (!value) {
+    return false;
+  }
+  return (
+    explicitPlaceholder ||
+    /_{3,}/.test(value) ||
+    /^<.*>$/.test(value) ||
+    /^\[.*\]$/.test(value) ||
+    value === "Cop Rasmi"
+  );
 }
