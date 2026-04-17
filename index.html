@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>M01 Bulk PDF Generator</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="panel">
+          <h1>M01 Bulk PDF Generator</h1>
+          <p class="muted">
+            Import a spreadsheet, map columns to form fields, preview the two-page layout, then export a merged PDF.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h2>Source Data</h2>
+          <label class="field">
+            <span>CSV / XLSX file</span>
+            <input id="dataFile" type="file" accept=".csv,.xlsx,.xls">
+          </label>
+          <label id="sheetField" class="field hidden">
+            <span>Sheet</span>
+            <select id="sheetSelect"></select>
+          </label>
+          <div id="fileStatus" class="status">No source file loaded.</div>
+        </div>
+
+        <div class="panel">
+          <h2>Image Assets</h2>
+          <label class="field">
+            <span>Image folder</span>
+            <input id="assetFolder" type="file" webkitdirectory directory multiple>
+          </label>
+          <div class="status">
+            Values in the spreadsheet can point to files by relative path, filename, or basename.
+          </div>
+          <div id="assetStatus" class="status">No asset folder selected.</div>
+        </div>
+
+        <div class="panel">
+          <h2>Preview Record</h2>
+          <div class="record-controls">
+            <button id="prevRow" type="button">Previous</button>
+            <input id="rowIndex" type="number" min="1" value="1">
+            <button id="nextRow" type="button">Next</button>
+          </div>
+          <div id="rowStatus" class="status">No records available.</div>
+        </div>
+
+        <div class="panel">
+          <h2>Export</h2>
+          <div class="button-stack">
+            <button id="autoMap" type="button">Auto-map Columns</button>
+            <button id="exportCurrent" type="button">Export Current Record</button>
+            <button id="exportAll" type="button" class="primary">Export All Records</button>
+          </div>
+          <div id="exportStatus" class="status">Ready.</div>
+        </div>
+
+        <div class="panel">
+          <h2>Fixed Layout Items</h2>
+          <p class="muted small">
+            These are intentionally not column-mapped in this build: section headers, row numbering, border structure,
+            legal paragraph boilerplate, signature line ornaments, and the static form code <strong>M01</strong>.
+          </p>
+        </div>
+
+        <div class="panel mapping-panel">
+          <h2>Field Mapping</h2>
+          <div id="mappingGrid" class="mapping-grid"></div>
+        </div>
+      </aside>
+
+      <main class="preview-area">
+        <div class="preview-header">
+          <div>
+            <h2>Preview</h2>
+            <p class="muted">Canvas preview uses the same drawing layout as the exported PDF.</p>
+          </div>
+          <div id="previewMeta" class="status compact">Waiting for data.</div>
+        </div>
+
+        <div class="preview-stack">
+          <section class="preview-card">
+            <div class="preview-label">Page 1</div>
+            <canvas id="page1Canvas" width="1190" height="1684"></canvas>
+          </section>
+          <section class="preview-card">
+            <div class="preview-label">Page 2</div>
+            <canvas id="page2Canvas" width="1190" height="1684"></canvas>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="./node_modules/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="./node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
